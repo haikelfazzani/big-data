@@ -1,0 +1,23 @@
+CREATE TABLE titanic 
+(
+	PassengerId:int, 
+	Survived:int, 
+	Pclass:int, 
+	FirstName:char, 
+	SecondName:char, 
+	Sex:char, 
+	Age:char, 
+	SibSp:char, 
+	Parch:char, 
+	Ticket:char, 
+	Fare:char, 
+	Cabin:char, 
+	Embarked:char
+)
+ROW FORMAT DELIMTED
+FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE;
+LOAD DATA LOCAL INPATH '/user/maria_dev/titanic-all.data'
+OVERWRITE INTO TABLE titanic;
+
+SELECT sex,max(age) FROM titanic WHERE survived = TRUE GROUP BY sex;

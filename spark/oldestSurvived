@@ -1,0 +1,46 @@
+# Created by Haikel Fazzani
+
+from pyspark.sql import SparkSession
+from pyspark.sql import Row
+from pyspark.sql import functions
+
+# olderSurvided
+# Output shoudle be: [Row(sex='female', count=233), Row(sex='male', count=109)] 
+
+def parseInput(line):
+    fields = line.split(',')
+    if len(fields[1]) == 0:
+        fields[1] = '0'
+
+    if len(fields[5]) == 0:
+        fields[5] = '0'
+
+    if len(fields[6]) == 0:
+        fields[6] = '0'
+
+    return Row(survived = int(fields[1]), sex = fields[5], age = int(float(fields[6].replace(",", "."))))
+
+if __name__ == "__main__":
+
+    spark = SparkSession.builder.appName("olderSurvided").getOrCreate()
+
+
+    lines = spark.sparkContext.textFile("hdfs://127.0.0.1:9000/user/hadoop/titanic-all.data")
+
+    survives = lines.map(parseInput)
+
+    titanicDataset = spark.createDataFrame(survives)
+
+    # nbSurvivedMaleAndFemale = titanicDataset.filter(titanicDataset.survived == "1").orderBy("age").groupBy("sex").max("age")
+
+    oldesFemale = titanicDataset.groupby('sex').max('age').collect()[0].asDict()['max(age)']
+    oldestMale = titanicDataset.groupby('sex').max('age').collect()[1].asDict()['max(age)']
+
+    # oldest = result.show(1)
+
+    print("oldesFemale ==> "+ oldesFemale)
+    print("oldestMale ==> " + oldestMale)
+
+    # Stop the session
+    spark.stop()
+

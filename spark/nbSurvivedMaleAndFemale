@@ -1,0 +1,39 @@
+# Created by Haikel Fazzani
+
+from pyspark.sql import SparkSession
+from pyspark.sql import Row
+from pyspark.sql import functions
+
+# NumberOfMaleSurvived
+# Output shoudle be: [Row(sex='female', count=233), Row(sex='male', count=109)] 
+
+def parseInput(line):
+    fields = line.split(',')
+    if len(fields[1]) == 0:
+        fields[1] = '0'
+
+    if len(fields[5]) == 0:
+        fields[5] = '0'
+
+    return Row(survived = int(fields[1]), sex = fields[5])
+
+if __name__ == "__main__":
+
+    spark = SparkSession.builder.appName("NumberOfMaleSurvived").getOrCreate()
+
+
+    lines = spark.sparkContext.textFile("hdfs://127.0.0.1:9000/user/hadoop/titanic-all.data")
+
+    survives = lines.map(parseInput)
+
+    titanicDataset = spark.createDataFrame(survives)
+
+    nbSurvivedMaleAndFemale = titanicDataset.filter(titanicDataset.survived == "1").groupBy("sex").count()
+
+    topTen = nbSurvivedMaleAndFemale.take(10)
+
+    print(topTen)
+
+    # Stop the session
+    spark.stop()
+

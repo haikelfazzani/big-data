@@ -1,0 +1,28 @@
+lines  = LOAD '/user/maria_dev/titanic-all.data'  
+USING PigStorage(',')
+AS (
+	PassengerId:int, 
+	Survived:int, 
+	Pclass:int, 
+	FirstName:chararray, 
+	SecondName:chararray, 
+	Sex:chararray, 
+	Age:chararray, 
+	SibSp:chararray, 
+	Parch:chararray, 
+	Ticket:chararray, 
+	Fare:chararray, 
+	Cabin:chararray, 
+	Embarked:chararray
+);
+
+survived = FILTER lines BY Survived > 0;
+
+filtred = FILTER survived BY Sex is not null;
+
+result = GROUP filtred BY Sex;
+
+GRP = GROUP result ALL;
+RESULT_COUNT = FOREACH GRP GENERATE COUNT(lines) AS cnt;
+
+DUMP RESULT_COUNT;
